@@ -3,30 +3,71 @@ import 'custom_input.dart';
 import 'custom_button.dart';
 import 'report_card.dart';
 import 'create_report_screen.dart';
+import 'models/report.dart';
+import 'services/reports_service.dart';
 
-class ReportListScreen extends StatelessWidget {
+class ReportListScreen extends StatefulWidget {
   const ReportListScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final TextEditingController searchController = TextEditingController();
+  State<ReportListScreen> createState() => _ReportListScreenState();
+}
 
-    final reports = [
-      {
-        'author': 'Ana García',
-        'location': 'Centro de la ciudad',
-        'time': 'Hace 2 horas',
-        'description': 'Problema con el alumbrado público en la calle principal',
-        'image': null,
-      },
-      {
-        'author': 'Carlos Mendoza',
-        'location': 'Parque Central',
-        'time': 'Hace 4 horas',
-        'description': 'Basura acumulada en los contenedores del parque',
-        'image': null,
-      }
-    ];
+class _ReportListScreenState extends State<ReportListScreen> {
+  final TextEditingController searchController = TextEditingController();
+  final ReportsService _reportsService = ReportsService();
+  List<Report> reports = [];
+  bool isLoading = true;
+  String? error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReports();
+  }
+
+  Future<void> _loadReports() async {
+    try {
+      final fetchedReports = await _reportsService.getReports();
+      setState(() {
+        reports = fetchedReports;
+        isLoading = false;
+        error = null;
+      });
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (error != null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Error: $error'),
+              ElevatedButton(
+                onPressed: _loadReports,
+                child: const Text('Reintentar'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -65,13 +106,13 @@ class ReportListScreen extends StatelessWidget {
               child: ListView.builder(
                 itemCount: reports.length,
                 itemBuilder: (context, index) {
-                  final r = reports[index];
+                  final report = reports[index];
                   return ReportCard(
-                    authorName: r['author']!,
-                    location: r['location']!,
-                    timeAgo: r['time']!,
-                    description: r['description']!,
-                    imageUrl: r['image'],
+                    authorName: report.author,
+                    location: report.location,
+                    timeAgo: report.time,
+                    description: report.description,
+                    imageUrl: report.imageUrl,
                   );
                 },
               ),
