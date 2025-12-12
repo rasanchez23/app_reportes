@@ -1,0 +1,11 @@
+lib/
+├── main.dart                          # Punto de entrada de la aplicación
+├── screens/                           # Carpeta de pantallas
+│   ├── welcome_screen.dart            # 1️⃣ Pantalla de bienvenida
+│   ├── login_screen.dart              # 2️⃣ Pantalla de login
+│   ├── sign_up_screen.dart            # 3️⃣ Pantalla de registro
+│   ├── report_list_screen.dart        # 4️⃣ Feed de reportes
+│   └── create_report_screen.dart      # 5️⃣ Crear nuevo reporte
+└── widgets/                           # Carpeta de componentes reutilizables
+    ├── custom_button.dart             # Botón personalizado
+    └── custom_input.dart              # Campo de entrada personalizado
