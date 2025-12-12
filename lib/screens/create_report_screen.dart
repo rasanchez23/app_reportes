@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_input.dart';
 import '../widgets/custom_button.dart';
+import '../services/api_service.dart';
 
 class CreateReportScreen extends StatefulWidget {
-  const CreateReportScreen({Key? key}) : super(key: key);
+  final String? username;
+  const CreateReportScreen({Key? key, this.username}) : super(key: key);
 
   @override
   State<CreateReportScreen> createState() => _CreateReportScreenState();
@@ -14,6 +16,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _contentController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -23,16 +26,40 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     super.dispose();
   }
 
-  void _handleCreateReport() {
+  void _handleCreateReport() async {
     if (_formKey.currentState!.validate()) {
-      // Aquí irá la lógica para crear el reporte
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Reporte creado exitosamente'),
-          backgroundColor: Colors.green,
-        ),
+      setState(() {
+        _isLoading = true;
+      });
+
+      final result = await ApiService.createReport(
+        title: _titleController.text,
+        description: _descriptionController.text,
+        author: widget.username ?? 'Usuario',
       );
-      Navigator.pop(context);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (result['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Reporte creado exitosamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message']),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
